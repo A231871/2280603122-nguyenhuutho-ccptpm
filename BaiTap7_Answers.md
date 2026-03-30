@@ -1,6 +1,6 @@
 **Câu 1: CI khác CD chỗ nào?**
 * **Trả lời:** 
-  * **CI (Continuous Integration - Tích hợp liên tục):** Tập trung vào việc tự động hóa quá trình *build* và *test* mỗi khi nhà phát triển (developer) có thay đổi và push code mới lên kho lưu trữ. Mục đích là để phát hiện lỗi sớm.
+  - **CI (Continuous Integration - Tích hợp liên tục):** Tập trung vào việc tự động hóa quá trình *build* và *test* mỗi khi nhà phát triển (developer) có thay đổi và push code mới lên kho lưu trữ. Mục đích là để phát hiện lỗi sớm.
   * **CD (Continuous Deployment - Triển khai liên tục):** Là bước mở rộng của CI. Sau khi code đã vượt qua quá trình CI (pass toàn bộ test), hệ thống CD sẽ tự động *deploy* (triển khai) phiên bản mới đó lên các môi trường như staging hoặc production.
 
 **Câu 2: Runner là gì? Ai cung cấp runner?**
