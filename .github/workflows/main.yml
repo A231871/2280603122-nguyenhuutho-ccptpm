@@ -1,43 +1,91 @@
-name: Deploy to GitHub Pages
+name: 3-Stage CI/CD Pipeline (BaiTap7)
 
+# Pipeline sẽ chạy khi bạn push code lên nhánh main
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Cấp quyền cho GitHub Actions được phép deploy lên GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
+  # ==========================================
+  # STAGE 1: BUILD
+  # ==========================================
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Giả lập quá trình Build
+        run: |
+          echo "Building the project..."
+          echo "Build completed at: $(date)"
+      
+      # Tạo Artifact: Đóng gói thư mục public để chuyển sang bước Test
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-public-artifact
+          path: './public'
+          retention-days: 1
+
+  # ==========================================
+  # STAGE 2: TEST
+  # ==========================================
+  test:
+    needs: build # Cấu hình tuần tự: Phải Build xong mới Test
+    runs-on: ubuntu-latest
+    steps:
+      # Tải Artifact từ bước Build xuống
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: my-public-artifact
+          path: './public'
+
+      - name: Chạy kiểm thử (Test)
+        run: |
+          echo "Running tests..."
+          echo "Kiểm tra xem các file HTML/CSS/JS có tồn tại không..."
+          test -f public/index.html && echo "OK: index.html exists" || exit 1
+          test -f public/styles.css && echo "OK: styles.css exists" || exit 1
+          test -f public/js/main.js && echo "OK: main.js exists" || exit 1
+          echo "Tất cả test đều Passed!"
+
+  # ==========================================
+  # STAGE 3: DEPLOY
+  # ==========================================
   deploy:
+    needs: test # Cấu hình tuần tự: Phải Test xanh (Pass) mới được Deploy
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Pages
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: my-public-artifact
+          path: './public'
+          
+      - name: Setup GitHub Pages
         uses: actions/configure-pages@v4
       
-      - name: Upload artifact
+      # Upload code chuẩn bị cho GitHub Pages
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: './public' # THAY ĐỔI: Chỉ định thư mục public của bạn
+          path: './public'
       
       - name: Deploy to GitHub Pages
         id: deployment
